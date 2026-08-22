@@ -1,42 +1,68 @@
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore'
+import { 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager,
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  getDocs 
+} from 'firebase/firestore'
+import { getAuth, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth' // Add Auth imports
 import type { Task } from '../types'
 
-// Firebase config - replace with your actual config
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'YOUR_API_KEY',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'your-project.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'your-project-id',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'your-project.appspot.com',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || 'YOUR_SENDER_ID',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'scan-done.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'scan-done',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'scan-done.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '929528018231',
   appId: import.meta.env.VITE_FIREBASE_APP_ID || 'YOUR_APP_ID'
 }
 
 let app: ReturnType<typeof initializeApp> | null = null
-let firestore: ReturnType<typeof getFirestore> | null = null
+let db: ReturnType<typeof initializeFirestore> | null = null
+let auth: ReturnType<typeof getAuth> | null = null
 
 function initFirebase() {
   if (!app) {
     try {
       app = initializeApp(firebaseConfig)
-      firestore = getFirestore(app)
+      
+      // Initialize Firestore with offline persistence
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
+      })
+
+      // Initialize Auth
+      auth = getAuth(app)
     } catch (error) {
       console.error('Firebase initialization error:', error)
     }
   }
-  return { app, firestore }
+  return { app, db, auth }
 }
 
 export function useFirebase() {
-  const { firestore: db } = initFirebase()
+  const { db, auth } = initFirebase()
+  const googleProvider = new GoogleAuthProvider()
 
-  /**
-   * Save a task to Firestore
-   */
+  async function loginWithGoogle(): Promise<User | null> {
+    if (!auth) throw new Error('Auth not initialized')
+    const result = await signInWithPopup(auth, googleProvider)
+    return result.user
+  }
+
+  async function logout(): Promise<void> {
+    if (!auth) throw new Error('Auth not initialized')
+    await auth.signOut()
+  }
+
   async function saveTask(task: Task): Promise<string> {
-    if (!db) {
-      throw new Error('Firestore not initialized')
-    }
+    if (!db) throw new Error('Firestore not initialized')
 
     const tasksCollection = collection(db, 'tasks')
     const docRef = await addDoc(tasksCollection, {
@@ -50,13 +76,8 @@ export function useFirebase() {
     return docRef.id
   }
 
-  /**
-   * Get tasks for a user (by userToken)
-   */
   async function getUserTasks(userToken: string): Promise<Task[]> {
-    if (!db) {
-      throw new Error('Firestore not initialized')
-    }
+    if (!db) throw new Error('Firestore not initialized')
 
     const tasksCollection = collection(db, 'tasks')
     const q = query(tasksCollection, where('userToken', '==', userToken))
@@ -74,6 +95,8 @@ export function useFirebase() {
   }
 
   return {
+    loginWithGoogle,
+    logout,
     saveTask,
     getUserTasks
   }
