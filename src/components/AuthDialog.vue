@@ -26,14 +26,6 @@ async function completeAuthentication(authenticateFn: () => Promise<boolean>) {
       await loadTasks()
     }
 
-    function handleAuthenticate() {
-      return completeAuthentication(authenticate)
-    }
-
-    function handleGoogleAuthenticate() {
-      return completeAuthentication(loginWithGoogle)
-    }
-    
     close()
     emit('authenticated')
   } catch (err) {
@@ -41,6 +33,14 @@ async function completeAuthentication(authenticateFn: () => Promise<boolean>) {
   } finally {
     isLoading.value = false
   }
+}
+
+function handleAuthenticate() {
+  return completeAuthentication(authenticate)
+}
+
+function handleGoogleAuthenticate() {
+  return completeAuthentication(loginWithGoogle)
 }
 
 function close() {

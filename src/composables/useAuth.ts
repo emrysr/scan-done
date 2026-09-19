@@ -78,35 +78,35 @@ export function useAuth() {
         return true
       }
 
-      async function loginWithGoogle() {
-        const firebaseUser = await firebase.loginWithGoogle()
-        if (!firebaseUser) {
-          throw new Error('Google sign-in did not return a user')
-        }
-
-        const googleUser: AuthUser = {
-          id: firebaseUser.uid,
-          createdAt: Date.now(),
-          provider: 'google',
-          displayName: firebaseUser.displayName,
-          email: firebaseUser.email
-        }
-
-        userToken.value = firebaseUser.uid
-        user.value = googleUser
-        localStorage.setItem(TOKEN_STORAGE_KEY, firebaseUser.uid)
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(googleUser))
-        isAuthenticated.value = true
-
-        return true
-      }
-
       // If no stored credentials, register new user
       return await register()
     } catch (error) {
       console.error('Authentication failed:', error)
       throw error
     }
+  }
+
+  async function loginWithGoogle() {
+    const firebaseUser = await firebase.loginWithGoogle()
+    if (!firebaseUser) {
+      throw new Error('Google sign-in did not return a user')
+    }
+
+    const googleUser: AuthUser = {
+      id: firebaseUser.uid,
+      createdAt: Date.now(),
+      provider: 'google',
+      displayName: firebaseUser.displayName,
+      email: firebaseUser.email
+    }
+
+    userToken.value = firebaseUser.uid
+    user.value = googleUser
+    localStorage.setItem(TOKEN_STORAGE_KEY, firebaseUser.uid)
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(googleUser))
+    isAuthenticated.value = true
+
+    return true
   }
 
   /**
