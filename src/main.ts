@@ -6,9 +6,11 @@ import 'bulma/css/bulma.min.css'
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(err => {
+  navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {
+    scope: import.meta.env.BASE_URL
+  }).catch(err => {
     console.log('Service Worker registration failed:', err)
   })
 }
 
-creatApp(App).mount('#app')
+createApp(App).mount('#app')

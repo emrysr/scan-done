@@ -74,6 +74,13 @@ npm run build
 npm run preview
 ```
 
+## GitLab Pages CI/CD
+
+The repository includes `.gitlab-ci.yml`. A push to the GitLab project's
+default branch runs the Node 20 build and publishes `dist/` as a GitLab Pages
+artifact. The Vite base path and service-worker scope are derived from
+`CI_PROJECT_NAME`, so the generated site works at the normal project Pages URL.
+
 ## How It Works
 
 ### Architecture
