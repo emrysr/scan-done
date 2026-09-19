@@ -81,14 +81,9 @@ default branch runs the Node 20 build and publishes `dist/` as a GitLab Pages
 artifact. The Vite base path and service-worker scope are derived from
 `CI_PROJECT_NAME`, so the generated site works at the normal project Pages URL.
 
-GitLab's mirror form may only offer **Push** mirroring on the current plan. To
-keep GitHub as the source of truth, `.github/workflows/mirror-to-gitlab.yml`
-pushes all refs to GitLab after each push to `main`. Configure these GitHub
-repository secrets:
-
-- `GITLAB_REPOSITORY`: the GitLab HTTPS repository URL
-- `GITLAB_USERNAME`: the project access token username
-- `GITLAB_TOKEN`: a GitLab project access token with `write_repository`
+GitLab is intended to be the canonical repository for this project. Keep
+`.gitlab-ci.yml` in the GitLab project and configure GitLab Pages there; no
+GitHub mirroring workflow is required.
 
 ## How It Works
 
