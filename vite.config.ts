@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: process.env.CI ? `/${process.env.CI_PROJECT_NAME}/` : '/',
+  base: process.env.VITE_BASE_PATH || '/',
   plugins: [
     vue(),
     VitePWA({

@@ -74,16 +74,15 @@ npm run build
 npm run preview
 ```
 
-## GitLab Pages CI/CD
+## GitHub Pages CI/CD
 
-The repository includes `.gitlab-ci.yml`. A push to the GitLab project's
-default branch runs the Node 20 build and publishes `dist/` as a GitLab Pages
-artifact. The Vite base path and service-worker scope are derived from
-`CI_PROJECT_NAME`, so the generated site works at the normal project Pages URL.
+The repository includes `.github/workflows/deploy-pages.yml`. A push to `main`
+installs dependencies with Node 20, runs the production build, and deploys
+`dist/` to GitHub Pages. The workflow supplies the repository base path so the
+Vite assets and service worker work at the project Pages URL.
 
-GitLab is intended to be the canonical repository for this project. Keep
-`.gitlab-ci.yml` in the GitLab project and configure GitLab Pages there; no
-GitHub mirroring workflow is required.
+Enable GitHub Pages in the repository settings with **Source: GitHub Actions**.
+After the first successful deployment, the workflow displays the published URL.
 
 ## How It Works
 
