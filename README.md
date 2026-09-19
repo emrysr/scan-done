@@ -54,6 +54,12 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
 
+Firebase web configuration values are public client configuration, not
+service-account credentials. Vite embeds `VITE_*` values into the browser
+bundle, so `.env.local` prevents accidental source-control commits but does
+not hide these values from users. Never put a Firebase Admin SDK private key,
+service-account JSON, or other server secret in a `VITE_*` variable.
+
 ### Development
 
 ```bash
