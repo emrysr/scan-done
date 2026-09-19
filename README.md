@@ -2,6 +2,8 @@
 
 A property maintenance task logger built with Vue 3, TypeScript, and PWA technology for offline-first operation with Firebase sync.
 
+See the [project roadmap](ROADMAP.md) for implementation status, dependencies, and planned next steps.
+
 ## Features
 
 - **📱 Offline First**: Works completely offline with automatic sync when back online
@@ -16,7 +18,7 @@ A property maintenance task logger built with Vue 3, TypeScript, and PWA technol
 - **Frontend**: Vue 3 + TypeScript + Vite
 - **Styling**: Bulma CSS framework
 - **Storage**: IndexedDB (offline) + Firebase Firestore (cloud)
-- **Authentication**: Custom token-based (no personal data stored)
+- **Authentication**: Firebase Google sign-in for cloud sync, with offline-only mode
 - **PWA**: Vite PWA Plugin with service workers and workbox
 
 ## Getting Started
@@ -76,12 +78,12 @@ npm run preview
 
 ### Architecture
 
-1. **Authentication**: Users are assigned a random token on first visit (stored in localStorage)
+1. **Authentication**: Users can sign in with Google for cloud sync, or use offline-only mode
 2. **Local Storage**: Tasks are stored in IndexedDB immediately for instant feedback
 3. **Offline Support**: Full app functionality without internet connection
 4. **Sync Queue**: When online, tasks are sent to Firebase Firestore
 5. **Automatic Retry**: Failed syncs are queued for retry
-6. **No Personal Data**: Only random tokens and timestamps stored — no names or identifiers
+6. **Local privacy**: Offline-only data remains local; Google profile identity is used for cloud ownership
 
 ### Data Flow
 
@@ -163,23 +165,34 @@ For easy reference in future discussions, major UI elements are labeled:
 
 ## Firebase Setup
 
+Google sign-in must be enabled in Firebase Authentication before using the
+Google login option. Deploy `firestore.rules` with the Firebase CLI so synced
+tasks are limited to the authenticated user's Firebase UID:
+
+```bash
+firebase deploy --only firestore:rules
+```
+
 ### Firestore Collection
 
 Create a `tasks` collection in Firebase Firestore.
 
 ### Security Rules
 
-Set the following security rules for public access (note: anyone can write tasks):
+The repository includes authenticated rules in `firestore.rules`. Do not use
+public read/write rules in production.
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /tasks/{document=**} {
-      // Anyone can write (stateless, no auth required)
-      allow write: if true;
-      // Anyone can read (public collection)
-      allow read: if true;
+    match /tasks/{taskId} {
+      allow read: if request.auth != null
+        && resource.data.userToken == request.auth.uid;
+      allow create, update: if request.auth != null
+        && request.resource.data.userToken == request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.userToken == request.auth.uid;
     }
   }
 }
@@ -203,14 +216,14 @@ tasks/
 
 This app is designed with **privacy-first** principles:
 
-- ✅ No user accounts or passwords required
-- ✅ No personal information collected
-- ✅ Users identified only by random tokens
+- ✅ Offline-only mode does not require an account
+- ✅ Google accounts are used only when cloud sync is selected
+- ✅ Synced tasks are scoped to the authenticated Firebase user
 - ✅ Tasks linked only to these tokens
 - ✅ No analytics or tracking
 - ✅ No third-party scripts
 - ✅ All data can be deleted by clearing browser storage
-- ✅ Firebase rules allow public write (anyone can add tasks)
+- ✅ Firestore rules require Firebase authentication
 
 ## Development Notes
 

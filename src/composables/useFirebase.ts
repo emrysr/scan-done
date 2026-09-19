@@ -9,7 +9,7 @@ import {
   where, 
   getDocs 
 } from 'firebase/firestore'
-import { getAuth, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth' // Add Auth imports
+import { getAuth, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth'
 import type { Task } from '../types'
 
 const firebaseConfig = {
@@ -56,6 +56,10 @@ export function useFirebase() {
     return result.user
   }
 
+  function getCurrentUser(): User | null {
+    return auth?.currentUser ?? null
+  }
+
   async function logout(): Promise<void> {
     if (!auth) throw new Error('Auth not initialized')
     await auth.signOut()
@@ -96,6 +100,7 @@ export function useFirebase() {
 
   return {
     loginWithGoogle,
+    getCurrentUser,
     logout,
     saveTask,
     getUserTasks

@@ -1,5 +1,6 @@
 import { ref, computed, onMounted } from 'vue'
 import type { AuthUser } from '../types'
+import { useFirebase } from './useFirebase'
 
 const isAuthenticated = ref(false)
 const user = ref<AuthUser | null>(null)
@@ -17,6 +18,7 @@ function generateUserToken(): string {
 }
 
 export function useAuth() {
+  const firebase = useFirebase()
   /**
    * Initialize auth from localStorage
    */
@@ -76,6 +78,29 @@ export function useAuth() {
         return true
       }
 
+      async function loginWithGoogle() {
+        const firebaseUser = await firebase.loginWithGoogle()
+        if (!firebaseUser) {
+          throw new Error('Google sign-in did not return a user')
+        }
+
+        const googleUser: AuthUser = {
+          id: firebaseUser.uid,
+          createdAt: Date.now(),
+          provider: 'google',
+          displayName: firebaseUser.displayName,
+          email: firebaseUser.email
+        }
+
+        userToken.value = firebaseUser.uid
+        user.value = googleUser
+        localStorage.setItem(TOKEN_STORAGE_KEY, firebaseUser.uid)
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(googleUser))
+        isAuthenticated.value = true
+
+        return true
+      }
+
       // If no stored credentials, register new user
       return await register()
     } catch (error) {
@@ -87,7 +112,11 @@ export function useAuth() {
   /**
    * Logout current user
    */
-  function logout() {
+  async function logout() {
+    if (user.value?.provider === 'google') {
+      await firebase.logout()
+    }
+
     localStorage.removeItem(TOKEN_STORAGE_KEY)
     localStorage.removeItem(USER_STORAGE_KEY)
     isAuthenticated.value = false
@@ -101,6 +130,7 @@ export function useAuth() {
     userToken: computed(() => userToken.value),
     register,
     authenticate,
+    loginWithGoogle,
     logout
   }
 }

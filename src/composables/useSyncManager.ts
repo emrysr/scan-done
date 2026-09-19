@@ -9,14 +9,14 @@ const pendingCount = ref<number>(0)
 const syncError = ref<string>('')
 
 export function useSyncManager() {
-  const { userToken, isAuthenticated } = useAuth()
+  const { userToken, user, isAuthenticated } = useAuth()
   const firebase = useFirebase()
 
   /**
    * Sync pending tasks to Firebase
    */
   async function syncPendingTasks() {
-    if (!isAuthenticated.value || !userToken.value) {
+    if (!isAuthenticated.value || !userToken.value || user.value?.provider !== 'google') {
       return
     }
 
@@ -59,7 +59,7 @@ export function useSyncManager() {
    * Calculate pending task count
    */
   async function updatePendingCount() {
-    if (!isAuthenticated.value || !userToken.value) {
+    if (!isAuthenticated.value || !userToken.value || user.value?.provider !== 'google') {
       pendingCount.value = 0
       return
     }

@@ -2,6 +2,9 @@
 export interface AuthUser {
   id: string
   createdAt: number
+  provider?: 'local' | 'google'
+  displayName?: string | null
+  email?: string | null
 }
 
 export interface WebAuthnCredential {

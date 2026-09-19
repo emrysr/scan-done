@@ -11,19 +11,27 @@ const isOpen = ref(true)
 const isLoading = ref(false)
 const error = ref('')
 
-const { authenticate, userToken } = useAuth()
+const { authenticate, loginWithGoogle, userToken } = useAuth()
 
-async function handleAuthenticate() {
+async function completeAuthentication(authenticateFn: () => Promise<boolean>) {
   isLoading.value = true
   error.value = ''
 
   try {
-    await authenticate()
+    await authenticateFn()
     
     // Load tasks for the authenticated user
     if (userToken.value) {
       const { loadTasks } = useTasks(userToken.value)
       await loadTasks()
+    }
+
+    function handleAuthenticate() {
+      return completeAuthentication(authenticate)
+    }
+
+    function handleGoogleAuthenticate() {
+      return completeAuthentication(loginWithGoogle)
     }
     
     close()
@@ -65,14 +73,24 @@ defineExpose({ close })
         </div>
       </section>
       <footer class="modal-card-foot is-justify-content-center" data-label="auth-modal-footer">
-        <button
-          class="button is-primary is-large"
-          :disabled="isLoading"
-          @click="handleAuthenticate"
-          data-label="get-started-button"
-        >
-          {{ isLoading ? 'Authenticating...' : 'Get Started' }}
-        </button>
+        <div class="buttons is-flex-direction-column is-align-items-stretch">
+          <button
+            class="button is-primary is-large"
+            :disabled="isLoading"
+            @click="handleGoogleAuthenticate"
+            data-label="google-sign-in-button"
+          >
+            {{ isLoading ? 'Authenticating...' : 'Continue with Google' }}
+          </button>
+          <button
+            class="button is-light"
+            :disabled="isLoading"
+            @click="handleAuthenticate"
+            data-label="local-start-button"
+          >
+            Use offline-only mode
+          </button>
+        </div>
       </footer>
     </div>
   </div>
