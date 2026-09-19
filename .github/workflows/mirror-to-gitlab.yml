@@ -1,0 +1,28 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out all refs
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push repository to GitLab
+        env:
+          GITLAB_REPOSITORY: ${{ secrets.GITLAB_REPOSITORY }}
+          GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        shell: bash
+        run: |
+          set -eu
+          git remote add gitlab "https://${GITLAB_USERNAME}:${GITLAB_TOKEN}@${GITLAB_REPOSITORY#https://}"
+          git push --mirror gitlab
