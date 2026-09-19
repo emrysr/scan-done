@@ -60,6 +60,22 @@ bundle, so `.env.local` prevents accidental source-control commits but does
 not hide these values from users. Never put a Firebase Admin SDK private key,
 service-account JSON, or other server secret in a `VITE_*` variable.
 
+For GitHub Pages, add these six values under **Settings → Secrets and
+variables → Actions → Variables** (not Secrets), using the values from the
+Firebase console:
+
+```text
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+```
+
+The Pages workflow passes those variables to the Vite build. A deployment
+fails clearly if any required Firebase value is missing.
+
 ### Development
 
 ```bash

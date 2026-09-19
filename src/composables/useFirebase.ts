@@ -12,13 +12,21 @@ import {
 import { getAuth, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth'
 import type { Task } from '../types'
 
+function requiredFirebaseConfig(name: string): string {
+  const value = import.meta.env[name]
+  if (!value) {
+    throw new Error(`Missing Firebase configuration: ${name}`)
+  }
+  return value
+}
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'YOUR_API_KEY',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'scan-done.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'scan-done',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'scan-done.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '929528018231',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || 'YOUR_APP_ID'
+  apiKey: requiredFirebaseConfig('VITE_FIREBASE_API_KEY'),
+  authDomain: requiredFirebaseConfig('VITE_FIREBASE_AUTH_DOMAIN'),
+  projectId: requiredFirebaseConfig('VITE_FIREBASE_PROJECT_ID'),
+  storageBucket: requiredFirebaseConfig('VITE_FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: requiredFirebaseConfig('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+  appId: requiredFirebaseConfig('VITE_FIREBASE_APP_ID')
 }
 
 let app: ReturnType<typeof initializeApp> | null = null
